@@ -26,9 +26,9 @@ namespace OktaLogin
                 var authenticationResult = await WebAuthenticator.AuthenticateAsync(loginUrl, callbackUrl);
                 JwtSecurityToken token = _loginService.ParseAuthenticationResult(authenticationResult);
 
-                IdTokenLabel.Text = authenticationResult.IdToken;
+                //IdTokenLabel.Text = authenticationResult.IdToken;
                 //AccessTokenLabel.Text = authenticationResult.AccessToken;
-                ExpiresLabel.Text = authenticationResult.ExpiresIn.ToString();
+                ExpiresLabel.Text = token.ValidTo.ToString();
 
                 var nameClaim = token.Claims.FirstOrDefault(claim => claim.Type == "given_name");
                 if (nameClaim != null)
