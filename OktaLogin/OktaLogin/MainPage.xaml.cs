@@ -9,6 +9,7 @@ namespace OktaLogin
     public partial class MainPage : ContentPage
     {
         private readonly LoginService _loginService;
+        private string _idToken;
 
         public MainPage()
         {
@@ -20,12 +21,13 @@ namespace OktaLogin
         {
             try
             {
-                var callbackUrl = new Uri(OktaConfiguration.Callback);
+                var callbackUrl = new Uri(AuthConfiguration.Callback);
                 var loginUrl = new Uri(_loginService.BuildAuthenticationUrl());
 
-                var authenticationResult = await WebAuthenticator.AuthenticateAsync(loginUrl, callbackUrl);
+                WebAuthenticatorResult authenticationResult = await WebAuthenticator.AuthenticateAsync(loginUrl, callbackUrl);
                 JwtSecurityToken token = _loginService.ParseAuthenticationResult(authenticationResult);
 
+                _idToken = authenticationResult.IdToken;
                 //IdTokenLabel.Text = authenticationResult.IdToken;
                 //AccessTokenLabel.Text = authenticationResult.AccessToken;
                 ExpiresLabel.Text = token.ValidTo.ToString();
@@ -56,6 +58,15 @@ namespace OktaLogin
             ExpiresLabel.Text = "";
 
             LogoutButton.IsVisible = !(LoginButton.IsVisible = true);
+
+            try
+            {
+                _loginService.Logout(_idToken);
+            }
+            catch (Exception ex)
+            {
+                WelcomeLabel.Text = ex.Message;
+            }
         }
     }
 }
