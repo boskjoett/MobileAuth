@@ -4,11 +4,13 @@
              x:Class="OktaLogin.MainPage">
 
     <StackLayout VerticalOptions="Center">
-        <Label Text="Welcome to Xamarin.Forms!" x:Name="WelcomeLabel" HorizontalOptions="Center" VerticalOptions="CenterAndExpand" />
-        <Label Text="---" x:Name="IdTokenLabel" HorizontalOptions="Center" VerticalOptions="CenterAndExpand" />
+        <Label Text="Welcome to Xamarin.Forms" x:Name="StatusLabel" HorizontalOptions="Center" VerticalOptions="CenterAndExpand" />
         <Label Text="---" x:Name="AccessTokenLabel" HorizontalOptions="Center" VerticalOptions="CenterAndExpand" />
+        <Label Text="---" x:Name="RefreshTokenLabel" HorizontalOptions="Center" VerticalOptions="CenterAndExpand" />
         <Label Text="---" x:Name="ExpiresLabel" HorizontalOptions="Center" VerticalOptions="CenterAndExpand" />
         <Button x:Name="LoginButton" Text="Log in with Okta" HorizontalOptions="Center" Clicked="LoginButtonClicked"/>
+        <Button x:Name="GetRefreshTokenButton" Text="Get Refresh Token" HorizontalOptions="Center" Clicked="GetRefreshTokenButtonClicked"/>
+        <Button x:Name="CallApiButton" Text="Call Client API" HorizontalOptions="Center" Clicked="CallApiButtonClicked"/>
         <Button x:Name="LogoutButton" Text="Log out"  IsVisible="False" HorizontalOptions="Center" Clicked="LogoutButtonClicked"/>
     </StackLayout>
 
