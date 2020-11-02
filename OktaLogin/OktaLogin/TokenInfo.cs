@@ -2,7 +2,7 @@
 
 namespace OktaLogin
 {
-    public class UserToken
+    public class TokenInfo
     {
         [JsonProperty("id_token")]
         public string IdToken { get; set; }

@@ -7,12 +7,13 @@ using System.Security.Cryptography;
 using System.IdentityModel.Tokens.Jwt;
 using Xamarin.Essentials;
 using IdentityModel;
+using Newtonsoft.Json;
 
 namespace OktaLogin
 {
     class AuthenticationService
     {
-        private const string IDToken = "code%20id_token%20token";
+        private const string ResponseType = "code%20id_token%20token";
         private const string CodeChallengeMethod = "S256";
         private string _codeVerifier;
 
@@ -26,8 +27,8 @@ namespace OktaLogin
 
             string redirectUri = WebUtility.UrlEncode(AuthConfiguration.Callback);
 
-            // return $"{OktaConfiguration.OrganizationUrl}/oauth2/default/v1/authorize?response_type={IDToken}&scope=openid%20profile&redirect_uri={redirectUri}&client_id={OktaConfiguration.ClientId}&state={state}&code_challenge={codeChallenge}&code_challenge_method={CodeChallengeMethod}&nonce={nonce}";
-            return $"{AuthConfiguration.OrganizationUrl}/connect/authorize?response_type={IDToken}&scope=openid%20profile%20email%20offline_access&redirect_uri={redirectUri}&client_id={AuthConfiguration.ClientId}&state={state}&code_challenge={codeChallenge}&code_challenge_method={CodeChallengeMethod}&nonce={nonce}";
+            // return $"{OktaConfiguration.OrganizationUrl}/oauth2/default/v1/authorize?response_type={ResponseType}&scope=openid%20profile&redirect_uri={redirectUri}&client_id={OktaConfiguration.ClientId}&state={state}&code_challenge={codeChallenge}&code_challenge_method={CodeChallengeMethod}&nonce={nonce}";
+            return $"{AuthConfiguration.OrganizationUrl}/connect/authorize?response_type={ResponseType}&scope=openid%20profile%20email%20offline_access%20client-api.full_access&redirect_uri={redirectUri}&client_id={AuthConfiguration.ClientId}&state={state}&code_challenge={codeChallenge}&code_challenge_method={CodeChallengeMethod}&nonce={nonce}";
         }
 
         public void Logout(string idToken)
@@ -38,7 +39,12 @@ namespace OktaLogin
             }
         }
 
-        public string GetRefreshToken(string authorizationCode)
+        /// <summary>
+        /// Calls the authentication service's token endpoint to get tokens.
+        /// </summary>
+        /// <param name="authorizationCode"></param>
+        /// <returns></returns>
+        public TokenInfo GetTokens(string authorizationCode)
         {
             using (HttpClient httpClient = new HttpClient())
             {
@@ -46,8 +52,9 @@ namespace OktaLogin
                 var content = new StringContent($"grant_type=authorization_code&client_id={AuthConfiguration.ClientId}&code={authorizationCode}&redirect_uri={redirectUri}&code_verifier={_codeVerifier}");
                 content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
                 HttpResponseMessage response = httpClient.PostAsync($"{AuthConfiguration.OrganizationUrl}/connect/token", content).Result;
-                var statusCode = response.StatusCode;
-                return "";
+                string responseBody = response.Content.ReadAsStringAsync().Result;
+                TokenInfo userToken = JsonConvert.DeserializeObject<TokenInfo>(responseBody);
+                return userToken;
             }
         }
 
@@ -58,14 +65,14 @@ namespace OktaLogin
             return token;
         }
 
-        HttpClient CreateHttpClient(string token = null)
+        public HttpClient CreateHttpClient(string accessToken = null)
         {
             var client = new HttpClient();
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
-            if (!string.IsNullOrEmpty(token))
+            if (!string.IsNullOrEmpty(accessToken))
             {
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
             }
 
             return client;

@@ -3,6 +3,7 @@ using System.Linq;
 using System.IdentityModel.Tokens.Jwt;
 using Xamarin.Forms;
 using Xamarin.Essentials;
+using System.Net.Http;
 
 namespace OktaLogin
 {
@@ -75,13 +76,27 @@ namespace OktaLogin
             }
         }
 
-        private void GetRefreshTokenButtonClicked(object sender, EventArgs e)
+        private void GetTokensButtonClicked(object sender, EventArgs e)
         {
-            _authenticationService.GetRefreshToken(_authorizationCode);
+            TokenInfo tokenInfo = _authenticationService.GetTokens(_authorizationCode);
+
+            RefreshTokenLabel.Text = tokenInfo.RefreshToken == null ? "RefreshToken is null" : "Got RefreshToken";
         }
 
         private void CallApiButtonClicked(object sender, EventArgs e)
         {
+            using (HttpClient httpClient = _authenticationService.CreateHttpClient(_authenticationResult.AccessToken))
+            {
+                try
+                {
+                    string version = httpClient.GetStringAsync("https://novus.zylinc.cloud/t1n/api/client/v1/product/version").Result;
+                    StatusLabel.Text = "Version: " + version;
+                }
+                catch (Exception ex)
+                {
+                    StatusLabel.Text = ex.Message;
+                }
+            }
         }
     }
 }
