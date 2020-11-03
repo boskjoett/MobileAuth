@@ -38,16 +38,24 @@ namespace OktaLogin
 
                 AccessTokenLabel.Text = _tokenInfo.AccessToken == null ? "AccessToken is null" : "Got AccessToken";
                 RefreshTokenLabel.Text = _tokenInfo.RefreshToken == null ? "RefreshToken is null" : "Got RefreshToken";
-                ExpiresLabel.Text = $"Valid to {token.ValidTo.ToLocalTime()}";
+                ExpiresLabel.Text = $"Access token expires at {DateTime.Now.AddSeconds(_tokenInfo.ExpiresIn)}";
 
                 var nameClaim = token.Claims.FirstOrDefault(claim => claim.Type == "given_name");
                 if (nameClaim != null)
                 {
-                    StatusLabel.Text = $"You are logged in as {nameClaim.Value}!";
+                    StatusLabel.Text = $"You are logged in as {nameClaim.Value}";
                 }
                 else
                 {
-                    StatusLabel.Text = $"You are logged in with user ID {token.Subject}";
+                    var emailClaim = token.Claims.FirstOrDefault(claim => claim.Type == "email");
+                    if (emailClaim != null)
+                    {
+                        StatusLabel.Text = $"You are logged in as {emailClaim.Value}";
+                    }
+                    else
+                    {
+                        StatusLabel.Text = $"You are logged in as user ID {token.Subject}";
+                    }
                 }
 
                 LogoutButton.IsVisible = true;
