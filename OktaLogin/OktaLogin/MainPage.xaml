@@ -9,7 +9,7 @@
         <Label Text="---" x:Name="RefreshTokenLabel" HorizontalOptions="Center" VerticalOptions="CenterAndExpand" />
         <Label Text="---" x:Name="ExpiresLabel" HorizontalOptions="Center" VerticalOptions="CenterAndExpand" />
         <Button x:Name="LoginButton" Text="Log in with Okta" HorizontalOptions="Center" Clicked="LoginButtonClicked"/>
-        <Button x:Name="GetTokensButton" Text="Get Tokens" HorizontalOptions="Center" Clicked="GetTokensButtonClicked"/>
+        <Button x:Name="RefreshTokenButton" Text="Refresh token" HorizontalOptions="Center" Clicked="RefreshTokenButtonClicked"/>
         <Button x:Name="CallApiButton" Text="Call Client API" HorizontalOptions="Center" Clicked="CallApiButtonClicked"/>
         <Button x:Name="LogoutButton" Text="Log out"  IsVisible="False" HorizontalOptions="Center" Clicked="LogoutButtonClicked"/>
     </StackLayout>

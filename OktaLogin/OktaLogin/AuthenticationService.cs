@@ -36,11 +36,12 @@ namespace OktaLogin
             return authorizeRequestUrl.Create(dic);
         }
 
-        public void Logout(string idToken)
+        public void Logout(string idToken, string accessToken)
         {
-            using (HttpClient httpClient = new HttpClient())
+            using (HttpClient httpClient = CreateHttpClient(accessToken))
             {
                 var response = httpClient.PostAsync(BuildLogoutUrl(idToken), null).Result;
+                response = httpClient.GetAsync($"{AuthConfiguration.OrganizationUrl}/Account/Logout?logoutId={idToken}").Result;
             }
         }
 

@@ -10,14 +10,15 @@ namespace OktaLogin
     public partial class MainPage : ContentPage
     {
         private readonly AuthenticationService _authenticationService;
-        private WebAuthenticatorResult _authenticationResult;
         private string _idToken;
-        private string _authorizationCode;
+        private TokenInfo _tokenInfo;
 
         public MainPage()
         {
             _authenticationService = new AuthenticationService();
             InitializeComponent();
+            RefreshTokenButton.IsEnabled = false;
+            CallApiButton.IsEnabled = false;
         }
 
         private async void LoginButtonClicked(object sender, EventArgs e)
@@ -27,14 +28,16 @@ namespace OktaLogin
                 var callbackUrl = new Uri(AuthConfiguration.RedirectUri);
                 var loginUrl = new Uri(_authenticationService.BuildAuthorizeRequestUrl());
 
-                _authenticationResult = await WebAuthenticator.AuthenticateAsync(loginUrl, callbackUrl);
-                JwtSecurityToken token = _authenticationService.ParseAuthenticationResult(_authenticationResult);
+                WebAuthenticatorResult authenticationResult = await WebAuthenticator.AuthenticateAsync(loginUrl, callbackUrl);
+                JwtSecurityToken token = _authenticationService.ParseAuthenticationResult(authenticationResult);
 
-                _idToken = _authenticationResult.IdToken;
-                _authorizationCode = _authenticationResult?.Properties["code"];
+                _idToken = authenticationResult.IdToken;
+                string authorizationCode = authenticationResult?.Properties["code"];
 
-                AccessTokenLabel.Text = _authenticationResult.AccessToken == null ? "AccessToken is null" : "Got AccessToken";
-                RefreshTokenLabel.Text = _authenticationResult.RefreshToken == null ? "RefreshToken is null" : "Got RefreshToken";
+                _tokenInfo = _authenticationService.GetTokens(authorizationCode);
+
+                AccessTokenLabel.Text = _tokenInfo.AccessToken == null ? "AccessToken is null" : "Got AccessToken";
+                RefreshTokenLabel.Text = _tokenInfo.RefreshToken == null ? "RefreshToken is null" : "Got RefreshToken";
                 ExpiresLabel.Text = $"Valid to {token.ValidTo.ToLocalTime()}";
 
                 var nameClaim = token.Claims.FirstOrDefault(claim => claim.Type == "given_name");
@@ -47,7 +50,20 @@ namespace OktaLogin
                     StatusLabel.Text = $"You are logged in with user ID {token.Subject}";
                 }
 
-                LogoutButton.IsVisible = !(LoginButton.IsVisible = false);
+                LogoutButton.IsVisible = true;
+                RefreshTokenButton.IsEnabled = true;
+                CallApiButton.IsEnabled = true;
+            }
+            catch (Exception ex)
+            {
+                StatusLabel.Text = ex.Message;
+            }
+        }
+
+        private void RefreshTokenButtonClicked(object sender, EventArgs e)
+        {
+            try
+            {
             }
             catch (Exception ex)
             {
@@ -62,13 +78,15 @@ namespace OktaLogin
             AccessTokenLabel.Text = "";
             ExpiresLabel.Text = "";
 
-            LogoutButton.IsVisible = !(LoginButton.IsVisible = true);
-
             try
             {
-                _authenticationService.Logout(_idToken);
+                _authenticationService.Logout(_idToken, _tokenInfo.AccessToken);
 
                 // Browser.OpenAsync(logoutUri, BrowserLaunchMode.SystemPreferred);
+
+                LogoutButton.IsVisible = false;
+                RefreshTokenButton.IsEnabled = false;
+                CallApiButton.IsEnabled = false;
             }
             catch (Exception ex)
             {
@@ -76,17 +94,9 @@ namespace OktaLogin
             }
         }
 
-        private void GetTokensButtonClicked(object sender, EventArgs e)
-        {
-            TokenInfo tokenInfo = _authenticationService.GetTokens(_authorizationCode);
-
-            AccessTokenLabel.Text = _authenticationResult.AccessToken == null ? "AccessToken is null" : "Got AccessToken";
-            RefreshTokenLabel.Text = tokenInfo.RefreshToken == null ? "RefreshToken is null" : "Got RefreshToken";
-        }
-
         private void CallApiButtonClicked(object sender, EventArgs e)
         {
-            using (HttpClient httpClient = _authenticationService.CreateHttpClient(_authenticationResult.AccessToken))
+            using (HttpClient httpClient = _authenticationService.CreateHttpClient(_tokenInfo.AccessToken))
             {
                 try
                 {
