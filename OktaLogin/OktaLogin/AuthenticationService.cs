@@ -22,9 +22,6 @@ namespace OktaLogin
             string state = CreateCryptoGuid();
             string nonce = CreateCryptoGuid();
             string codeChallenge = CreateCodeChallenge();
-            
-            //string codeChallenge = WebUtility.UrlEncode(CreateCodeChallenge());
-
             string redirectUri = WebUtility.UrlEncode(AuthConfiguration.Callback);
 
             // return $"{OktaConfiguration.OrganizationUrl}/oauth2/default/v1/authorize?response_type={ResponseType}&scope=openid%20profile&redirect_uri={redirectUri}&client_id={OktaConfiguration.ClientId}&state={state}&code_challenge={codeChallenge}&code_challenge_method={CodeChallengeMethod}&nonce={nonce}";
@@ -40,10 +37,10 @@ namespace OktaLogin
         }
 
         /// <summary>
-        /// Calls the authentication service's token endpoint to get tokens.
+        /// Calls the authentication service's token endpoint to get access token and refresh token.
         /// </summary>
-        /// <param name="authorizationCode"></param>
-        /// <returns></returns>
+        /// <param name="authorizationCode">Authorization code</param>
+        /// <returns>Token info</returns>
         public TokenInfo GetTokens(string authorizationCode)
         {
             using (HttpClient httpClient = new HttpClient())
