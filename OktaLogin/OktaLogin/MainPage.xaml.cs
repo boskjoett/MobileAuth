@@ -72,6 +72,11 @@ namespace OktaLogin
         {
             try
             {
+                _tokenInfo = _authenticationService.RefreshTokens(_tokenInfo.RefreshToken);
+
+                AccessTokenLabel.Text = _tokenInfo.AccessToken == null ? "AccessToken is null" : "Got AccessToken";
+                RefreshTokenLabel.Text = _tokenInfo.RefreshToken == null ? "RefreshToken is null" : "Got RefreshToken";
+                ExpiresLabel.Text = $"Access token expires at {DateTime.Now.AddSeconds(_tokenInfo.ExpiresIn)}";
             }
             catch (Exception ex)
             {

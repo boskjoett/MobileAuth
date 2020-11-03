@@ -64,6 +64,25 @@ namespace OktaLogin
             }
         }
 
+        /// <summary>
+        /// Calls the authentication service's token endpoint to renew the access token using a refresh token.
+        /// </summary>
+        /// <param name="refreshToken">Refresh token</param>
+        /// <returns>Token info</returns>
+        public TokenInfo RefreshTokens(string refreshToken)
+        {
+            using (HttpClient httpClient = new HttpClient())
+            {
+                string redirectUri = WebUtility.UrlEncode(AuthConfiguration.RedirectUri);
+                var content = new StringContent($"grant_type=refresh_token&client_id={AuthConfiguration.ClientId}&refresh_token={refreshToken}");
+                content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
+                HttpResponseMessage response = httpClient.PostAsync($"{AuthConfiguration.OrganizationUrl}/connect/token", content).Result;
+                string responseBody = response.Content.ReadAsStringAsync().Result;
+                TokenInfo userToken = JsonConvert.DeserializeObject<TokenInfo>(responseBody);
+                return userToken;
+            }
+        }
+
         public JwtSecurityToken ParseAuthenticationResult(WebAuthenticatorResult authenticationResult)
         {
             var handler = new JwtSecurityTokenHandler();
