@@ -1,9 +1,9 @@
 ﻿using System;
+using System.Net.Http;
 using System.Linq;
 using System.IdentityModel.Tokens.Jwt;
 using Xamarin.Forms;
 using Xamarin.Essentials;
-using System.Net.Http;
 
 namespace OktaLogin
 {
@@ -24,8 +24,8 @@ namespace OktaLogin
         {
             try
             {
-                var callbackUrl = new Uri(AuthConfiguration.Callback);
-                var loginUrl = new Uri(_authenticationService.BuildAuthenticationUrl());
+                var callbackUrl = new Uri(AuthConfiguration.RedirectUri);
+                var loginUrl = new Uri(_authenticationService.BuildAuthorizeRequestUrl());
 
                 _authenticationResult = await WebAuthenticator.AuthenticateAsync(loginUrl, callbackUrl);
                 JwtSecurityToken token = _authenticationService.ParseAuthenticationResult(_authenticationResult);
@@ -80,6 +80,7 @@ namespace OktaLogin
         {
             TokenInfo tokenInfo = _authenticationService.GetTokens(_authorizationCode);
 
+            AccessTokenLabel.Text = _authenticationResult.AccessToken == null ? "AccessToken is null" : "Got AccessToken";
             RefreshTokenLabel.Text = tokenInfo.RefreshToken == null ? "RefreshToken is null" : "Got RefreshToken";
         }
 

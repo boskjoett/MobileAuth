@@ -1,31 +1,39 @@
 ﻿using System;
+using System.Text;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Text;
+using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.IdentityModel.Tokens.Jwt;
 using Xamarin.Essentials;
 using IdentityModel;
+using IdentityModel.Client;
 using Newtonsoft.Json;
 
 namespace OktaLogin
 {
     class AuthenticationService
     {
-        private const string ResponseType = "code%20id_token%20token";
-        private const string CodeChallengeMethod = "S256";
         private string _codeVerifier;
 
-        public string BuildAuthenticationUrl()
+        public string BuildAuthorizeRequestUrl()
         {
-            string state = CreateCryptoGuid();
-            string nonce = CreateCryptoGuid();
-            string codeChallenge = CreateCodeChallenge();
-            string redirectUri = WebUtility.UrlEncode(AuthConfiguration.Callback);
+            var authorizeRequestUrl = new RequestUrl($"{AuthConfiguration.OrganizationUrl}/connect/authorize");
 
-            // return $"{OktaConfiguration.OrganizationUrl}/oauth2/default/v1/authorize?response_type={ResponseType}&scope=openid%20profile&redirect_uri={redirectUri}&client_id={OktaConfiguration.ClientId}&state={state}&code_challenge={codeChallenge}&code_challenge_method={CodeChallengeMethod}&nonce={nonce}";
-            return $"{AuthConfiguration.OrganizationUrl}/connect/authorize?response_type={ResponseType}&scope=openid%20profile%20email%20offline_access%20client-api.full_access&redirect_uri={redirectUri}&client_id={AuthConfiguration.ClientId}&state={state}&code_challenge={codeChallenge}&code_challenge_method={CodeChallengeMethod}&nonce={nonce}";
+            // Dictionary with values for the authorize request
+            var dic = new Dictionary<string, string>();
+            dic.Add("client_id", AuthConfiguration.ClientId);
+            dic.Add("response_type", "code id_token");
+            dic.Add("scope", "openid profile email offline_access client-api.full_access");
+            dic.Add("redirect_uri", AuthConfiguration.RedirectUri);
+            dic.Add("nonce", CreateCryptoGuid());
+            dic.Add("code_challenge", CreateCodeChallenge());
+            dic.Add("code_challenge_method", "S256");
+            dic.Add("state", CreateCryptoGuid());
+            dic.Add("acr_values", $"DeviceId:{Guid.NewGuid()}");
+
+            return authorizeRequestUrl.Create(dic);
         }
 
         public void Logout(string idToken)
@@ -45,7 +53,7 @@ namespace OktaLogin
         {
             using (HttpClient httpClient = new HttpClient())
             {
-                string redirectUri = WebUtility.UrlEncode(AuthConfiguration.Callback);
+                string redirectUri = WebUtility.UrlEncode(AuthConfiguration.RedirectUri);
                 var content = new StringContent($"grant_type=authorization_code&client_id={AuthConfiguration.ClientId}&code={authorizationCode}&redirect_uri={redirectUri}&code_verifier={_codeVerifier}");
                 content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
                 HttpResponseMessage response = httpClient.PostAsync($"{AuthConfiguration.OrganizationUrl}/connect/token", content).Result;
