@@ -19,13 +19,14 @@ namespace OktaLogin
 
         public string BuildAuthorizeRequestUrl()
         {
-            var authorizeRequestUrl = new RequestUrl($"{AuthConfiguration.OrganizationUrl}/connect/authorize");
+            var authorizeRequestUrl = new RequestUrl(AuthConfiguration.AuthorizeEndpointUrl);
 
             // Dictionary with values for the authorize request
             var dic = new Dictionary<string, string>();
             dic.Add("client_id", AuthConfiguration.ClientId);
             dic.Add("response_type", "code id_token");
-            dic.Add("scope", "openid profile email offline_access client-api.full_access");
+            dic.Add("scope", "openid profile email offline_access");
+//            dic.Add("scope", "openid profile email offline_access client-api.full_access");
             dic.Add("redirect_uri", AuthConfiguration.RedirectUri);
             dic.Add("nonce", CreateCryptoGuid());
             dic.Add("code_challenge", CreateCodeChallenge());
@@ -34,6 +35,13 @@ namespace OktaLogin
             dic.Add("acr_values", $"DeviceId:{Guid.NewGuid()}");
 
             return authorizeRequestUrl.Create(dic);
+
+            //string state = CreateCryptoGuid();
+            //string nonce = CreateCryptoGuid();
+            //string codeChallenge = CreateCodeChallenge();
+            //string redirectUri = WebUtility.UrlEncode(AuthConfiguration.RedirectUri);
+
+            //return $"{AuthConfiguration.OrganizationUrl}/connect/authorize?response_type=code%20id_token&scope=openid%20profile%20email%20offline_access%20client-api.full_access&redirect_uri={redirectUri}&client_id={AuthConfiguration.ClientId}&state={state}&code_challenge={codeChallenge}&code_challenge_method=S256&nonce={nonce}";
         }
 
         public void Logout(string idToken, string accessToken)
@@ -105,7 +113,7 @@ namespace OktaLogin
 
         private string BuildLogoutUrl(string idToken)
         {
-            return $"{AuthConfiguration.OrganizationUrl}/connect/endsession?id_token_hint={idToken}&post_logout_redirect_uri=zymobile:%2F%2F";
+            return $"{AuthConfiguration.OrganizationUrl}/connect/endsession?id_token_hint={idToken}&post_logout_redirect_uri=zymobile%3A%2F%2F";
         }
 
         private string CreateCryptoGuid()
