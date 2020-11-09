@@ -44,7 +44,7 @@ namespace OktaLogin
             //return $"{AuthConfiguration.OrganizationUrl}/connect/authorize?response_type=code%20id_token&scope=openid%20profile%20email%20offline_access%20client-api.full_access&redirect_uri={redirectUri}&client_id={AuthConfiguration.ClientId}&state={state}&code_challenge={codeChallenge}&code_challenge_method=S256&nonce={nonce}";
         }
 
-        public void Logout(string idToken, string refreshToken)
+        public void Logout(string idToken, string accessToken, string refreshToken)
         {
             using (HttpClient httpClient = new HttpClient())
             {
@@ -58,6 +58,12 @@ namespace OktaLogin
 
                 // Call SignOutAsync endpoint
                 response = httpClient.PostAsync($"{AuthConfiguration.OrganizationUrl}/Account/signout", null).Result;
+            }
+
+            using (HttpClient httpClient = CreateHttpClient(accessToken))
+            {
+                // Call Logout endpoint
+                HttpResponseMessage response = httpClient.GetAsync($"{AuthConfiguration.OrganizationUrl}/Account/Logout").Result;
             }
         }
 
@@ -117,11 +123,6 @@ namespace OktaLogin
             }
 
             return client;
-        }
-
-        private string BuildLogoutUrl(string idToken)
-        {
-            return $"{AuthConfiguration.EndSessionEndpointUrl}?id_token_hint={idToken}&post_logout_redirect_uri=zymobile%3A%2F%2F";
         }
 
         private string CreateCryptoGuid()

@@ -93,7 +93,7 @@ namespace OktaLogin
 
             try
             {
-                _authenticationService.Logout(_idToken, _tokenInfo.RefreshToken);
+                _authenticationService.Logout(_idToken, _tokenInfo.AccessToken, _tokenInfo.RefreshToken);
 
                 LogoutButton.IsVisible = false;
                 RefreshTokenButton.IsEnabled = false;
