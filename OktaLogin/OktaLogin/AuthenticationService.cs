@@ -25,8 +25,8 @@ namespace OktaLogin
             var dic = new Dictionary<string, string>();
             dic.Add("client_id", AuthConfiguration.ClientId);
             dic.Add("response_type", "code id_token");
-            dic.Add("scope", "openid profile email offline_access");
-//            dic.Add("scope", "openid profile email offline_access client-api.full_access");
+//            dic.Add("scope", "openid profile email offline_access");  // For Okta
+            dic.Add("scope", "openid profile email offline_access client-api.full_access");  // For Novus
             dic.Add("redirect_uri", AuthConfiguration.RedirectUri);
             dic.Add("nonce", CreateCryptoGuid());
             dic.Add("code_challenge", CreateCodeChallenge());
@@ -48,7 +48,10 @@ namespace OktaLogin
         {
             using (HttpClient httpClient = CreateHttpClient(accessToken))
             {
-                var response = httpClient.PostAsync(BuildLogoutUrl(idToken), null).Result;
+                // Call endsession endpoint
+                var response = httpClient.PostAsync($"{AuthConfiguration.EndSessionEndpointUrl}?id_token_hint={idToken}&post_logout_redirect_uri=zymobile%3A%2F%2F", null).Result;
+
+                // Call logout endpoint
                 response = httpClient.GetAsync($"{AuthConfiguration.OrganizationUrl}/Account/Logout?logoutId={idToken}").Result;
             }
         }
@@ -65,7 +68,7 @@ namespace OktaLogin
                 string redirectUri = WebUtility.UrlEncode(AuthConfiguration.RedirectUri);
                 var content = new StringContent($"grant_type=authorization_code&client_id={AuthConfiguration.ClientId}&code={authorizationCode}&redirect_uri={redirectUri}&code_verifier={_codeVerifier}");
                 content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
-                HttpResponseMessage response = httpClient.PostAsync($"{AuthConfiguration.OrganizationUrl}/connect/token", content).Result;
+                HttpResponseMessage response = httpClient.PostAsync($"{AuthConfiguration.TokenEndpointUrl}", content).Result;
                 string responseBody = response.Content.ReadAsStringAsync().Result;
                 TokenInfo userToken = JsonConvert.DeserializeObject<TokenInfo>(responseBody);
                 return userToken;
@@ -84,7 +87,7 @@ namespace OktaLogin
                 string redirectUri = WebUtility.UrlEncode(AuthConfiguration.RedirectUri);
                 var content = new StringContent($"grant_type=refresh_token&client_id={AuthConfiguration.ClientId}&refresh_token={refreshToken}");
                 content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
-                HttpResponseMessage response = httpClient.PostAsync($"{AuthConfiguration.OrganizationUrl}/connect/token", content).Result;
+                HttpResponseMessage response = httpClient.PostAsync($"{AuthConfiguration.TokenEndpointUrl}", content).Result;
                 string responseBody = response.Content.ReadAsStringAsync().Result;
                 TokenInfo userToken = JsonConvert.DeserializeObject<TokenInfo>(responseBody);
                 return userToken;
@@ -113,7 +116,7 @@ namespace OktaLogin
 
         private string BuildLogoutUrl(string idToken)
         {
-            return $"{AuthConfiguration.OrganizationUrl}/connect/endsession?id_token_hint={idToken}&post_logout_redirect_uri=zymobile%3A%2F%2F";
+            return $"{AuthConfiguration.EndSessionEndpointUrl}?id_token_hint={idToken}&post_logout_redirect_uri=zymobile%3A%2F%2F";
         }
 
         private string CreateCryptoGuid()

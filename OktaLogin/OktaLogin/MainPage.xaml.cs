@@ -34,14 +34,11 @@ namespace OktaLogin
                 _idToken = authenticationResult.IdToken;
                 string authorizationCode = authenticationResult?.Properties["code"];
 
-                if (!AuthConfiguration.IsOktaLogin)
-                {
-                    _tokenInfo = _authenticationService.GetTokens(authorizationCode);
+                _tokenInfo = _authenticationService.GetTokens(authorizationCode);
 
-                    AccessTokenLabel.Text = _tokenInfo.AccessToken == null ? "AccessToken is null" : "Got AccessToken";
-                    RefreshTokenLabel.Text = _tokenInfo.RefreshToken == null ? "RefreshToken is null" : "Got RefreshToken";
-                    ExpiresLabel.Text = $"Access token expires at {DateTime.Now.AddSeconds(_tokenInfo.ExpiresIn)}";
-                }
+                AccessTokenLabel.Text = _tokenInfo.AccessToken == null ? "AccessToken is null" : "Got AccessToken";
+                RefreshTokenLabel.Text = _tokenInfo.RefreshToken == null ? "RefreshToken is null" : "Got RefreshToken";
+                ExpiresLabel.Text = $"Access token expires at {DateTime.Now.AddSeconds(_tokenInfo.ExpiresIn)}";
 
                 var nameClaim = token.Claims.FirstOrDefault(claim => claim.Type == "given_name");
                 if (nameClaim != null)
