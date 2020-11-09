@@ -44,15 +44,20 @@ namespace OktaLogin
             //return $"{AuthConfiguration.OrganizationUrl}/connect/authorize?response_type=code%20id_token&scope=openid%20profile%20email%20offline_access%20client-api.full_access&redirect_uri={redirectUri}&client_id={AuthConfiguration.ClientId}&state={state}&code_challenge={codeChallenge}&code_challenge_method=S256&nonce={nonce}";
         }
 
-        public void Logout(string idToken, string accessToken)
+        public void Logout(string idToken, string refreshToken)
         {
-            using (HttpClient httpClient = CreateHttpClient(accessToken))
+            using (HttpClient httpClient = new HttpClient())
             {
                 // Call endsession endpoint
-                var response = httpClient.PostAsync($"{AuthConfiguration.EndSessionEndpointUrl}?id_token_hint={idToken}&post_logout_redirect_uri=zymobile%3A%2F%2F", null).Result;
+                HttpResponseMessage response = httpClient.GetAsync($"{AuthConfiguration.EndSessionEndpointUrl}?id_token_hint={idToken}&post_logout_redirect_uri=zymobile%3A%2F%2F").Result;
 
-                // Call logout endpoint
-                response = httpClient.GetAsync($"{AuthConfiguration.OrganizationUrl}/Account/Logout?logoutId={idToken}").Result;
+                // Call token revocation endpoint
+                var content = new StringContent($"token={refreshToken}&token_type_hint=refresh_token&client_id={AuthConfiguration.ClientId}");
+                content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
+                response = httpClient.PostAsync($"{AuthConfiguration.RevocationEndpointUrl}", content).Result;
+
+                // Call SignOutAsync endpoint
+                response = httpClient.PostAsync($"{AuthConfiguration.OrganizationUrl}/Account/signout", null).Result;
             }
         }
 
