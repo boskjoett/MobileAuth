@@ -96,8 +96,6 @@ namespace OktaLogin
                 _authenticationService.Logout(_idToken, _tokenInfo.AccessToken, _tokenInfo.RefreshToken);
 
                 LogoutButton.IsVisible = false;
-                RefreshTokenButton.IsEnabled = false;
-                CallApiButton.IsEnabled = false;
             }
             catch (Exception ex)
             {
@@ -111,7 +109,7 @@ namespace OktaLogin
             {
                 try
                 {
-                    string version = httpClient.GetStringAsync("https://novus.zylinc.cloud/t1n/api/client/v1/product/version").Result;
+                    string version = httpClient.GetStringAsync($"{AuthConfiguration.OrganizationUrl}/api/client/v1/product/version").Result;
                     StatusLabel.Text = "Version: " + version;
                 }
                 catch (Exception ex)

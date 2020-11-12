@@ -46,24 +46,30 @@ namespace OktaLogin
 
         public void Logout(string idToken, string accessToken, string refreshToken)
         {
+            // Call Logout endpoint with Bearer token
+            using (HttpClient httpClient = CreateHttpClient(accessToken))
+            {
+                // Call Logout endpoint
+                HttpResponseMessage response = httpClient.GetAsync($"{AuthConfiguration.OrganizationUrl}/Account/Logout").Result;
+            }
+
             using (HttpClient httpClient = new HttpClient())
             {
                 // Call endsession endpoint
                 HttpResponseMessage response = httpClient.GetAsync($"{AuthConfiguration.EndSessionEndpointUrl}?id_token_hint={idToken}&post_logout_redirect_uri=zymobile%3A%2F%2F").Result;
 
                 // Call token revocation endpoint
-                var content = new StringContent($"token={refreshToken}&token_type_hint=refresh_token&client_id={AuthConfiguration.ClientId}");
-                content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
-                response = httpClient.PostAsync($"{AuthConfiguration.RevocationEndpointUrl}", content).Result;
+                using (var content = new StringContent($"token={refreshToken}&token_type_hint=refresh_token&client_id={AuthConfiguration.ClientId}"))
+                {
+                    content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
+                    response = httpClient.PostAsync($"{AuthConfiguration.RevocationEndpointUrl}", content).Result;
+                }
+
+                // Call Logout endpoint
+                response = httpClient.GetAsync($"{AuthConfiguration.OrganizationUrl}/auth/Account/Logout").Result;
 
                 // Call SignOutAsync endpoint
-                response = httpClient.PostAsync($"{AuthConfiguration.OrganizationUrl}/Account/signout", null).Result;
-            }
-
-            using (HttpClient httpClient = CreateHttpClient(accessToken))
-            {
-                // Call Logout endpoint
-                HttpResponseMessage response = httpClient.GetAsync($"{AuthConfiguration.OrganizationUrl}/Account/Logout").Result;
+                response = httpClient.PostAsync($"{AuthConfiguration.OrganizationUrl}/auth/Account/signout", null).Result;
             }
         }
 
@@ -77,12 +83,14 @@ namespace OktaLogin
             using (HttpClient httpClient = new HttpClient())
             {
                 string redirectUri = WebUtility.UrlEncode(AuthConfiguration.RedirectUri);
-                var content = new StringContent($"grant_type=authorization_code&client_id={AuthConfiguration.ClientId}&code={authorizationCode}&redirect_uri={redirectUri}&code_verifier={_codeVerifier}");
-                content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
-                HttpResponseMessage response = httpClient.PostAsync($"{AuthConfiguration.TokenEndpointUrl}", content).Result;
-                string responseBody = response.Content.ReadAsStringAsync().Result;
-                TokenInfo userToken = JsonConvert.DeserializeObject<TokenInfo>(responseBody);
-                return userToken;
+                using (var content = new StringContent($"grant_type=authorization_code&client_id={AuthConfiguration.ClientId}&code={authorizationCode}&redirect_uri={redirectUri}&code_verifier={_codeVerifier}"))
+                {
+                    content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
+                    HttpResponseMessage response = httpClient.PostAsync($"{AuthConfiguration.TokenEndpointUrl}", content).Result;
+                    string responseBody = response.Content.ReadAsStringAsync().Result;
+                    TokenInfo userToken = JsonConvert.DeserializeObject<TokenInfo>(responseBody);
+                    return userToken;
+                }
             }
         }
 
@@ -96,12 +104,14 @@ namespace OktaLogin
             using (HttpClient httpClient = new HttpClient())
             {
                 string redirectUri = WebUtility.UrlEncode(AuthConfiguration.RedirectUri);
-                var content = new StringContent($"grant_type=refresh_token&client_id={AuthConfiguration.ClientId}&refresh_token={refreshToken}");
-                content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
-                HttpResponseMessage response = httpClient.PostAsync($"{AuthConfiguration.TokenEndpointUrl}", content).Result;
-                string responseBody = response.Content.ReadAsStringAsync().Result;
-                TokenInfo userToken = JsonConvert.DeserializeObject<TokenInfo>(responseBody);
-                return userToken;
+                using (var content = new StringContent($"grant_type=refresh_token&client_id={AuthConfiguration.ClientId}&refresh_token={refreshToken}"))
+                {
+                    content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
+                    HttpResponseMessage response = httpClient.PostAsync($"{AuthConfiguration.TokenEndpointUrl}", content).Result;
+                    string responseBody = response.Content.ReadAsStringAsync().Result;
+                    TokenInfo userToken = JsonConvert.DeserializeObject<TokenInfo>(responseBody);
+                    return userToken;
+                }
             }
         }
 

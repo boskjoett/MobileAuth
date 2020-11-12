@@ -14,12 +14,23 @@
         //public const bool IsOktaLogin = true;
 
         // Novus
+        //public const string ClientId = "mobile";
+        //public const string OrganizationUrl = "https://novus.zylinc.cloud/t6n";
+        //public const string AuthorizeEndpointUrl = "https://novus.zylinc.cloud/t6n/auth/connect/authorize";
+        //public const string TokenEndpointUrl = "https://novus.zylinc.cloud/t6n/auth/connect/token";
+        //public const string RevocationEndpointUrl = "https://novus.zylinc.cloud/t6n/auth/connect/revocation";
+        //public const string EndSessionEndpointUrl = "https://novus.zylinc.cloud/t6n/auth/connect/endsession";
+        //public const string RedirectUri = "zymobile://";
+        //public const string CallbackScheme = "zymobile";
+        //public const bool IsOktaLogin = false;
+
+        // BCS test server
         public const string ClientId = "mobile";
-        public const string OrganizationUrl = "https://novus.zylinc.cloud/t1n/auth";
-        public const string AuthorizeEndpointUrl = "https://novus.zylinc.cloud/t1n/auth/connect/authorize";
-        public const string TokenEndpointUrl = "https://novus.zylinc.cloud/t1n/auth/connect/token";
-        public const string RevocationEndpointUrl = "https://novus.zylinc.cloud/t1n/auth/connect/revocation";
-        public const string EndSessionEndpointUrl = "https://novus.zylinc.cloud/t1n/auth/connect/endsession";
+        public const string OrganizationUrl = "https://novusvm1.westeurope.cloudapp.azure.com";
+        public const string AuthorizeEndpointUrl = "https://novusvm1.westeurope.cloudapp.azure.com/connect/authorize";
+        public const string TokenEndpointUrl = "https://novusvm1.westeurope.cloudapp.azure.com/connect/token";
+        public const string RevocationEndpointUrl = "https://novusvm1.westeurope.cloudapp.azure.com/connect/revocation";
+        public const string EndSessionEndpointUrl = "https://novusvm1.westeurope.cloudapp.azure.com/connect/endsession";
         public const string RedirectUri = "zymobile://";
         public const string CallbackScheme = "zymobile";
         public const bool IsOktaLogin = false;
