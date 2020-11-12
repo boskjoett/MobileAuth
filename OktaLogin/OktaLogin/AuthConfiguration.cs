@@ -31,6 +31,7 @@
         public const string TokenEndpointUrl = "https://novusvm1.westeurope.cloudapp.azure.com/connect/token";
         public const string RevocationEndpointUrl = "https://novusvm1.westeurope.cloudapp.azure.com/connect/revocation";
         public const string EndSessionEndpointUrl = "https://novusvm1.westeurope.cloudapp.azure.com/connect/endsession";
+        public const string AccountEndpointUrl = "https://novusvm1.westeurope.cloudapp.azure.com/Account/";
         public const string RedirectUri = "zymobile://";
         public const string CallbackScheme = "zymobile";
         public const bool IsOktaLogin = false;

@@ -50,7 +50,7 @@ namespace OktaLogin
             using (HttpClient httpClient = CreateHttpClient(accessToken))
             {
                 // Call Logout endpoint
-                HttpResponseMessage response = httpClient.GetAsync($"{AuthConfiguration.OrganizationUrl}/Account/Logout").Result;
+                HttpResponseMessage response = httpClient.GetAsync($"{AuthConfiguration.AccountEndpointUrl}/Logout").Result;
             }
 
             using (HttpClient httpClient = new HttpClient())
@@ -66,10 +66,10 @@ namespace OktaLogin
                 }
 
                 // Call Logout endpoint
-                response = httpClient.GetAsync($"{AuthConfiguration.OrganizationUrl}/auth/Account/Logout").Result;
+                response = httpClient.GetAsync($"{AuthConfiguration.AccountEndpointUrl}/Logout").Result;
 
                 // Call SignOutAsync endpoint
-                response = httpClient.PostAsync($"{AuthConfiguration.OrganizationUrl}/auth/Account/signout", null).Result;
+                response = httpClient.PostAsync($"{AuthConfiguration.AccountEndpointUrl}/signout", null).Result;
             }
         }
 
